@@ -1,0 +1,7 @@
+[submodule "vagrant/nixpkgs"]
+	path = vagrant/nixpkgs
+	url = https://github.com/NixOS/nixpkgs.git
+	branch = nixos-25.11
+[submodule "vagrant/nixsap"]
+	path = vagrant/nixsap
+	url = https://github.com/ip1981/nixsap.git
