@@ -49,12 +49,28 @@ Vagrant.configure("2") do |config|
         }
       DEFAULT_NIX
 
-      # FIXME: a better way to reuse `vagrant ssh-config > foo` ?
-      stdout = $stdout
-      $stdout = StringIO.new
-      env.cli('ssh-config', '--host', machine.name.to_s)
-      File.write "#{infra_dir}/ssh_config", $stdout.string
-      $stdout = stdout
+      # XXX from plugins/commands/ssh_config/command.rb
+      variables = {
+        host_key: machine.name,
+        ssh_host: ssh[:host],
+        ssh_port: ssh[:port],
+        ssh_user: ssh[:username],
+        keys_only: ssh[:keys_only],
+        verify_host_key: ssh[:verify_host_key],
+        private_key_path: ssh[:private_key_path],
+        log_level: ssh[:log_level],
+        forward_agent: ssh[:forward_agent],
+        forward_x11:   ssh[:forward_x11],
+        proxy_command: ssh[:proxy_command],
+        ssh_command:   ssh[:ssh_command],
+        forward_env:   ssh[:forward_env],
+        config:        ssh[:config],
+        disable_deprecated_algorithms: ssh[:disable_deprecated_algorithms]
+      }
+
+      template = "commands/ssh_config/config"
+      ssh_config   = Vagrant::Util::TemplateRenderer.render(template, variables)
+      File.write "#{infra_dir}/ssh_config", ssh_config
 
     end
   end
