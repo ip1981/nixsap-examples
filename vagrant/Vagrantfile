@@ -1,6 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Tested with Vagrant 2.3.7+git20230731.5fc64cde+dfsg-4pin0 on Debian
+# (also patched to support VirtualBox 7.1 and 7.2)
+
+ENV["VAGRANT_EXPERIMENTAL"] = 'disks,typed_triggers'
+
 require 'fileutils'
 
 Vagrant.configure("2") do |config|
@@ -21,7 +26,7 @@ Vagrant.configure("2") do |config|
   # FIXME we don't want it as we configure and build stuff *outside* the VM
   config.vm.synced_folder '.', '/vagrant', disabled: true
 
-  config.trigger.after [ :up, :reload ] do |after_up|
+  config.trigger.after [ :machine_action_up, :machine_action_reload ], type: :hook do |after_up|
     after_up.name = "Extract machine info for use by Nix"
     after_up.ruby do |env, machine|
       infra_dir = "machines/#{machine.name}/infra"
@@ -75,13 +80,15 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  config.trigger.before :provision do |provision|
+  config.trigger.before :provisioner_run, type: :hook do |provision|
     provision.ruby do |env, machine|
       system('nixsap', '-I', '.', '-F', "machines/#{machine.name}/infra/ssh_config", 'deploy', "machines/#{machine.name}")
     end
   end
 
-  config.vm.define "nixos", autostart: true do |nixos|
+  config.vm.provision "shell", inline: ""
+
+  config.vm.define "nixos", autostart: false do |nixos|
     nixos.vm.disk :disk, size: "50GB", primary: true
   end
 
