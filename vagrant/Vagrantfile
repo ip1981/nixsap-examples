@@ -74,7 +74,7 @@ Vagrant.configure("2") do |config|
       }
 
       template = "commands/ssh_config/config"
-      ssh_config   = Vagrant::Util::TemplateRenderer.render(template, variables)
+      ssh_config = Vagrant::Util::TemplateRenderer.render(template, variables)
       File.write "#{infra_dir}/ssh_config", ssh_config
 
     end
